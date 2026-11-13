@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Asistencia">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Asistencia</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f1f5f4;color:#10231f}
+button,input,select{font:inherit}
+.hide{display:none!important}
+#login{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px;text-align:center}
+#login h1{margin:0;font-size:32px}
+#login input{font-size:34px;text-align:center;letter-spacing:10px;width:260px;padding:12px;border:2px solid #0f766e;border-radius:14px}
+.btn{background:#0f766e;color:#fff;border:0;border-radius:14px;padding:14px 22px;font-size:18px;font-weight:600}
+.btn.sec{background:#e2eceb;color:#0f4c46}
+.btn.sm{padding:9px 14px;font-size:15px;border-radius:10px}
+.err{color:#b91c1c;min-height:22px;font-weight:600}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0f766e;color:#fff;padding-top:max(10px,env(safe-area-inset-top))}
+header h1{font-size:19px;margin:0;flex:1}
+#estado{font-size:14px;background:rgba(255,255,255,.18);padding:5px 10px;border-radius:99px}
+#estado.off{background:#f59e0b;color:#3b2300}
+nav{display:flex;background:#fff;border-bottom:1px solid #d5e0de}
+nav button{flex:1;padding:14px 4px;border:0;background:none;font-size:17px;font-weight:600;color:#486460;border-bottom:4px solid transparent}
+nav button.on{color:#0f766e;border-color:#0f766e}
+main{padding:14px;max-width:980px;margin:0 auto}
+.cam{position:relative;background:#000;border-radius:16px;overflow:hidden;aspect-ratio:4/3;max-height:52vh;margin:0 auto}
+.cam video{width:100%;height:100%;object-fit:cover}
+.cam .marco{position:absolute;inset:18%;border:4px solid rgba(255,255,255,.85);border-radius:18px;pointer-events:none}
+.cam .activar{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#10231f}
+.res{margin-top:14px;border-radius:16px;padding:16px;display:flex;gap:16px;align-items:center;background:#fff;border:3px solid #d5e0de;min-height:120px}
+.res.ok{border-color:#16a34a;background:#f0fdf4}
+.res.ya{border-color:#eab308;background:#fefce8}
+.res.noexiste{border-color:#dc2626;background:#fef2f2}
+.foto{width:96px;height:96px;border-radius:16px;object-fit:cover;background:#cfe3e0;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;color:#0f4c46;flex:none;overflow:hidden}
+.foto.sm{width:48px;height:48px;font-size:18px;border-radius:12px}
+.res h2{margin:0 0 4px;font-size:24px}
+.res p{margin:2px 0;font-size:18px}
+.tag{font-weight:700;font-size:20px}
+.filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filtros input{flex:1;min-width:200px;padding:12px;font-size:18px;border:2px solid #b9cdca;border-radius:12px}
+.filtros select{padding:12px;font-size:17px;border:2px solid #b9cdca;border-radius:12px;background:#fff}
+.fila{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:8px;border:1px solid #d5e0de}
+.fila .n{flex:1;min-width:0}
+.fila .n b{display:block;font-size:16px}
+.fila .n span{font-size:14px;color:#486460}
+.pres{color:#15803d;font-weight:700}
+details{background:#fff;border:1px solid #d5e0de;border-radius:14px;margin-bottom:10px;padding:4px 12px}
+summary{padding:12px 0;font-size:18px;font-weight:700;cursor:pointer}
+.resumen{display:flex;gap:12px;margin-bottom:12px}
+.resumen div{flex:1;background:#fff;border-radius:14px;padding:14px;text-align:center;border:1px solid #d5e0de}
+.resumen b{display:block;font-size:32px;color:#0f766e}
+.stickers{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.stk{border:1px dashed #aaa;text-align:center;padding:8px 4px;height:4.6cm;break-inside:avoid;overflow:hidden}
+.stk img{width:2.8cm;height:2.8cm;image-rendering:pixelated}
+.stk b{display:block;font-size:11px}
+.stk span{display:block;font-size:7px;line-height:1.1}
+.vacio{text-align:center;color:#486460;padding:30px}
+@media print{
+header,nav,.filtros,.noprint{display:none!important}
+body{background:#fff}
+main{padding:0;max-width:none}
+.tab:not(#t-qr){display:none!important}
+@page{size:letter;margin:0}
+}
+</style>
+</head>
+<body>
+<section id="login" class="hide">
+<h1>Asistencia escolar</h1>
+<p>Escribe el PIN para entrar</p>
+<input id="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="off">
+<button class="btn" id="entrar">Entrar</button>
+<div class="err" id="loginErr"></div>
+</section>
+<section id="app" class="hide">
+<header>
+<h1>Asistencia</h1>
+<span id="estado">En línea</span>
+<button class="btn sec sm" id="refrescar">Actualizar lista</button>
+<button class="btn sec sm" id="salir">Salir</button>
+</header>
+<nav>
+<button data-tab="scan" class="on">Escanear</button>
+<button data-tab="manual">Manual</button>
+<button data-tab="hoy">Hoy</button>
+<button data-tab="qr">QR</button>
+</nav>
+<main>
+<div class="tab" id="t-scan">
+<div class="cam">
+<video id="video" playsinline muted></video>
+<div class="marco"></div>
+<div class="activar" id="activar"><button class="btn" id="btnCam">Activar cámara</button></div>
+</div>
+<div style="text-align:center;margin-top:10px"><button class="btn sec sm" id="girar">Cambiar cámara</button></div>
+<div class="res hide" id="res"></div>
+<canvas id="canvas" class="hide"></canvas>
+</div>
+<div class="tab hide" id="t-manual">
+<div class="filtros">
+<input id="q" placeholder="Buscar alumno por nombre" autocomplete="off">
+<select id="fNivel"></select>
+<select id="fGrado"></select>
+</div>
+<div id="lista"></div>
+</div>
+<div class="tab hide" id="t-hoy">
+<div class="resumen"><div><b id="nPres">0</b>presentes</div><div><b id="nFalt">0</b>faltan</div><div><b id="nTot">0</b>total</div></div>
+<div id="grupos"></div>
+</div>
+<div class="tab hide" id="t-qr">
+<div class="filtros noprint">
+<input id="qq" placeholder="Buscar alumno" autocomplete="off">
+<select id="qNivel"></select>
+<select id="qGrado"></select>
+<button class="btn" id="imprimir">Imprimir QR</button>
+</div>
+<p class="noprint" style="color:#486460">Elige un grupo o busca un alumno para imprimir sus stickers. Al imprimir, usa tamaño real (100%) en hoja carta.</p>
+<div class="stickers" id="stickers"></div>
+</div>
+</main>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/dist/qrcode.js"></script>
+<script>
+const API='https://script.google.com/macros/s/AKfycbw1rnop3OR_b_AvAadCRL0n-qV_pFHCXSdWUgDQV28MhOEP-PrDyV9wc73lvrvvIJA1Lw/exec';
+const $=s=>document.querySelector(s);
+const LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const SAVE=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let pin=localStorage.getItem('pin')||'';
+let students=LS('alumnos',[]);
+let hoy=LS('hoy',{f:'',m:{}});
+let cola=LS('cola',[]);
+let byId={};
+let tab='scan';
+function fechaHoy(){return new Date().toLocaleDateString('en-CA')}
+function horaAhora(d){return d.toTimeString().slice(0,5)}
+function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
+function ensureHoy(){const f=fechaHoy();if(hoy.f!==f){hoy={f:f,m:{}};SAVE('hoy',hoy)}}
+function reindex(){byId={};students.forEach(s=>byId[s.id]=s)}
+function ini(n){const w=String(n).trim().split(/\s+/);return ((w[0]||'')[0]||'')+((w[1]||'')[0]||'')}
+async function api(body){
+const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({pin:pin},body))});
+return r.json();
+}
+async function cargar(){
+const r=await api({action:'students'});
+if(!r.ok){ if(r.error==='pin'){cerrarSesion();} throw new Error(r.error||'error'); }
+students=r.students; SAVE('alumnos',students); reindex(); ensureHoy();
+const m={};
+students.forEach(s=>{ if(s.hoy && r.hoy===hoy.f) m[s.id]=s.hoy; });
+cola.forEach(c=>{ if(c.f===hoy.f) m[c.id]=m[c.id]||c.h; });
+hoy.m=m; SAVE('hoy',hoy);
+filtrosInit(); render();
+}
+function marcar(id,metodo){
+ensureHoy();
+const s=byId[id];
+if(!s) return {estado:'noexiste',id:id};
+if(hoy.m[id]) return {estado:'ya',hora:hoy.m[id],s:s};
+const d=new Date(); const h=horaAhora(d);
+hoy.m[id]=h; SAVE('hoy',hoy);
+cola.push({id:id,ts:d.toISOString(),metodo:metodo,f:hoy.f,h:h}); SAVE('cola',cola);
+sync();
+return {estado:'ok',hora:h,s:s};
+}
+let sincronizando=false;
+async function sync(){
+pintarEstado();
+if(sincronizando||!cola.length||!pin) return;
+sincronizando=true;
+const lote=cola.slice();
+try{
+const r=await api({action:'mark',marks:lote.map(c=>({id:c.id,ts:c.ts,metodo:c.metodo}))});
+if(r.ok){ cola=cola.slice(lote.length); SAVE('cola',cola); }
+else if(r.error==='pin'){ cerrarSesion(); }
+}catch(e){}
+sincronizando=false;
+pintarEstado();
+}
+function pintarEstado(){
+const e=$('#estado'); const off=!navigator.onLine;
+e.className=off?'off':'';
+e.textContent=(off?'Sin conexión':'En línea')+(cola.length?' · '+cola.length+' pendientes':'');
+}
+setInterval(sync,8000);
+window.addEventListener('online',()=>{sync();});
+window.addEventListener('offline',pintarEstado);
+let ac=null;
+function beep(tipo){
+try{
+ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+const t=ac.currentTime;
+const notas=tipo==='ok'?[880]:tipo==='ya'?[600,600]:[300,220];
+notas.forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type='sine';g.gain.value=.15;o.connect(g);g.connect(ac.destination);o.start(t+i*.18);o.stop(t+i*.18+.14)});
+}catch(e){}
+}
+function fotoEl(s,cls){
+const d=document.createElement('div'); d.className='foto '+(cls||'');
+if(s&&s.foto){ const i=document.createElement('img'); i.src=s.foto; i.className='foto '+(cls||''); i.style.margin=0;
+i.onerror=()=>{d.textContent=ini(s.nombre)}; d.style.padding=0; d.appendChild(i); i.style.width='100%'; i.style.height='100%'; i.referrerPolicy='no-referrer'; }
+else d.textContent=s?ini(s.nombre):'?';
+return d;
+}
+let stream=null, loop=null, facing='environment', ultimo='', ultimoT=0, hideT=null;
+async function camOn(){
+if(stream) return;
+try{
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720}},audio:false});
+const v=$('#video'); v.srcObject=stream; await v.play();
+$('#activar').classList.add('hide');
+loop=setInterval(leer,140);
+}catch(e){
+$('#activar').classList.remove('hide');
+$('#btnCam').textContent='No se pudo abrir la cámara. Toca para reintentar';
+}
+}
+function camOff(){
+if(loop){clearInterval(loop);loop=null}
+if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+$('#activar').classList.remove('hide'); $('#btnCam').textContent='Activar cámara';
+}
+function leer(){
+const v=$('#video'); if(v.readyState<2||!v.videoWidth) return;
+const c=$('#canvas'); const w=Math.min(640,v.videoWidth); const h=Math.round(v.videoHeight*w/v.videoWidth);
+c.width=w;c.height=h; const x=c.getContext('2d',{willReadFrequently:true}); x.drawImage(v,0,0,w,h);
+const img=x.getImageData(0,0,w,h);
+const q=jsQR(img.data,w,h,{inversionAttempts:'dontInvert'});
+if(q&&q.data){
+const code=q.data.trim(); const now=Date.now();
+if(code===ultimo && now-ultimoT<4000) return;
+ultimo=code; ultimoT=now;
+resultado(marcar(code,'qr'),code);
+}
+}
+function resultado(r,code){
+beep(r.estado);
+const c=$('#res'); c.className='res '+r.estado; c.innerHTML='';
+const s=r.s||byId[code];
+if(s){ c.appendChild(fotoEl(s)); }
+const t=document.createElement('div');
+if(r.estado==='noexiste'){
+t.innerHTML='<h2>QR no reconocido</h2><p>Código: '+String(code).replace(/[<>&]/g,'')+'</p><p>Usa la pestaña Manual.</p>';
+}else{
+const h=document.createElement('h2'); h.textContent=s.nombre;
+const p=document.createElement('p'); p.textContent=s.nivel+' '+s.grado+'°';
+const g=document.createElement('p'); g.className='tag';
+g.textContent=r.estado==='ok'?'✔ Registrado a las '+r.hora:'Ya estaba registrado a las '+r.hora;
+t.append(h,p,g);
+}
+c.appendChild(t);
+clearTimeout(hideT); hideT=setTimeout(()=>{ultimo=''},6000);
+render();
+}
+const NIVELES=['Primaria','Secundaria','Preparatoria'];
+function opts(sel,vals,todo){ sel.innerHTML=''; const o=document.createElement('option'); o.value=''; o.textContent=todo; sel.appendChild(o);
+vals.forEach(v=>{const x=document.createElement('option');x.value=v;x.textContent=v;sel.appendChild(x)}); }
+function filtrosInit(){
+const niv=NIVELES.filter(n=>students.some(s=>s.nivel===n)); students.forEach(s=>{if(!niv.includes(s.nivel)) niv.push(s.nivel)});
+[['#fNivel','#fGrado'],['#qNivel','#qGrado']].forEach(([a,b])=>{
+const A=$(a),B=$(b); const keep=A.value; opts(A,niv,'Todos los niveles'); A.value=keep; gradoOpts(A,B);
+});
+}
+function gradoOpts(A,B){
+const keep=B.value;
+const gs=[...new Set(students.filter(s=>!A.value||s.nivel===A.value).map(s=>String(s.grado)))].sort((x,y)=>x-y);
+opts(B,gs,'Todos los grados'); B.value=gs.includes(keep)?keep:'';
+}
+function filtrar(q,n,g){
+const t=norm(q);
+return students.filter(s=>(!n||s.nivel===n)&&(!g||String(s.grado)===g)&&(!t||norm(s.nombre).includes(t)));
+}
+function renderManual(){
+const L=$('#lista'); L.innerHTML='';
+const f=filtrar($('#q').value,$('#fNivel').value,$('#fGrado').value);
+if(!f.length){L.innerHTML='<div class="vacio">Sin resultados</div>';return}
+f.slice(0,80).forEach(s=>L.appendChild(fila(s)));
+if(f.length>80){const d=document.createElement('div');d.className='vacio';d.textContent='Hay más resultados: escribe más letras o elige un grupo';L.appendChild(d)}
+}
+function fila(s){
+const d=document.createElement('div'); d.className='fila';
+d.appendChild(fotoEl(s,'sm'));
+const n=document.createElement('div'); n.className='n';
+n.innerHTML='<b></b><span></span>'; n.firstChild.textContent=s.nombre; n.lastChild.textContent=s.nivel+' '+s.grado+'°';
+d.appendChild(n);
+if(hoy.m[s.id]){ const p=document.createElement('div'); p.className='pres'; p.textContent='✔ '+hoy.m[s.id]; d.appendChild(p); }
+else{ const b=document.createElement('button'); b.className='btn sm'; b.textContent='Registrar'; b.onclick=()=>{ const r=marcar(s.id,'manual'); beep(r.estado); render(); }; d.appendChild(b); }
+return d;
+}
+function renderHoy(){
+const tot=students.length; const pres=students.filter(s=>hoy.m[s.id]).length;
+$('#nPres').textContent=pres; $('#nFalt').textContent=tot-pres; $('#nTot').textContent=tot;
+const G=$('#grupos'); const abiertos=[...G.querySelectorAll('details[open]')].map(d=>d.dataset.k); G.innerHTML='';
+const grupos={}; students.forEach(s=>{const k=s.nivel+' '+s.grado+'°'; (grupos[k]=grupos[k]||[]).push(s)});
+Object.keys(grupos).forEach(k=>{
+const arr=grupos[k]; const p=arr.filter(s=>hoy.m[s.id]).length;
+const d=document.createElement('details'); d.dataset.k=k; if(abiertos.includes(k)) d.open=true;
+const sm=document.createElement('summary'); sm.textContent=k+'  —  '+p+' de '+arr.length; d.appendChild(sm);
+arr.slice().sort((a,b)=>(hoy.m[a.id]?1:0)-(hoy.m[b.id]?1:0)).forEach(s=>d.appendChild(fila(s)));
+G.appendChild(d);
+});
+}
+function renderQR(){
+const S=$('#stickers'); S.innerHTML='';
+const f=filtrar($('#qq').value,$('#qNivel').value,$('#qGrado').value);
+f.forEach(s=>{
+const q=qrcode(0,'M'); q.addData(s.id); q.make();
+const d=document.createElement('div'); d.className='stk';
+d.innerHTML='<img alt=""><b></b><span></span><span></span>';
+d.querySelector('img').src=q.createDataURL(8,4);
+d.querySelector('b').textContent=s.id;
+const sp=d.querySelectorAll('span'); sp[0].textContent=s.nombre; sp[1].textContent=s.nivel+' '+s.grado+'°';
+S.appendChild(d);
+});
+}
+function render(){
+if(tab==='manual') renderManual();
+else if(tab==='hoy') renderHoy();
+else if(tab==='qr') renderQR();
+}
+function ir(t){
+tab=t;
+document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hide',x.id!=='t-'+t));
+if(t==='scan') camOn(); else camOff();
+render();
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>ir(b.dataset.tab));
+$('#btnCam').onclick=camOn;
+$('#girar').onclick=()=>{facing=facing==='environment'?'user':'environment';camOff();camOn()};
+$('#q').oninput=renderManual;
+$('#fNivel').onchange=()=>{gradoOpts($('#fNivel'),$('#fGrado'));renderManual()};
+$('#fGrado').onchange=renderManual;
+$('#qq').oninput=renderQR;
+$('#qNivel').onchange=()=>{gradoOpts($('#qNivel'),$('#qGrado'));renderQR()};
+$('#qGrado').onchange=renderQR;
+$('#imprimir').onclick=()=>window.print();
+$('#refrescar').onclick=async()=>{const b=$('#refrescar');b.textContent='Actualizando...';try{await sync();await cargar();b.textContent='Lista actualizada'}catch(e){b.textContent='Sin conexión'}setTimeout(()=>b.textContent='Actualizar lista',2000)};
+$('#salir').onclick=()=>{ if(cola.length && !confirm('Hay '+cola.length+' registros sin enviar. Si sales se pierden. ¿Salir?')) return; cerrarSesion(); };
+function mostrarLogin(){ camOff(); $('#app').classList.add('hide'); $('#login').classList.remove('hide'); $('#pin').value=''; }
+function cerrarSesion(){ pin=''; localStorage.removeItem('pin'); mostrarLogin(); }
+async function entrar(){
+const p=$('#pin').value.trim(); if(!p) return;
+$('#loginErr').textContent='Verificando...'; pin=p;
+try{
+await cargar(); localStorage.setItem('pin',pin); $('#loginErr').textContent=''; abrirApp();
+}catch(e){
+pin=''; $('#loginErr').textContent=(e.message==='pin')?'PIN incorrecto':'No hay conexión. Intenta de nuevo.';
+}
+}
+$('#entrar').onclick=entrar;
+$('#pin').onkeydown=e=>{if(e.key==='Enter') entrar()};
+function abrirApp(){ $('#login').classList.add('hide'); $('#app').classList.remove('hide'); pintarEstado(); ir('scan'); }
+(async function(){
+reindex(); ensureHoy(); filtrosInit();
+if(pin){
+abrirApp();
+try{ await cargar(); }catch(e){}
+sync();
+} else mostrarLogin();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
